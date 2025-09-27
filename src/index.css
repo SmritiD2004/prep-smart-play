@@ -2,95 +2,134 @@
 @tailwind components;
 @tailwind utilities;
 
-/* Definition of the design system. All colors, gradients, fonts, etc should be defined here. 
-All colors MUST be HSL.
+/* PrepSmart Design System - Disaster Education Platform
+All colors MUST be HSL for accessibility and theming.
 */
 
 @layer base {
   :root {
-    --background: 0 0% 100%;
-    --foreground: 222.2 84% 4.9%;
+    /* Core backgrounds - Clean and trustworthy */
+    --background: 210 20% 98%;
+    --foreground: 215 25% 15%;
 
+    /* Card system - Elevated content */
     --card: 0 0% 100%;
-    --card-foreground: 222.2 84% 4.9%;
+    --card-foreground: 215 25% 15%;
 
+    /* Interactive surfaces */
     --popover: 0 0% 100%;
-    --popover-foreground: 222.2 84% 4.9%;
+    --popover-foreground: 215 25% 15%;
 
-    --primary: 222.2 47.4% 11.2%;
-    --primary-foreground: 210 40% 98%;
+    /* Primary brand - Trust and safety blue */
+    --primary: 214 84% 45%;
+    --primary-foreground: 0 0% 98%;
+    --primary-hover: 214 84% 40%;
 
-    --secondary: 210 40% 96.1%;
-    --secondary-foreground: 222.2 47.4% 11.2%;
+    /* Secondary - Calm learning environment */
+    --secondary: 210 30% 92%;
+    --secondary-foreground: 215 25% 25%;
 
-    --muted: 210 40% 96.1%;
-    --muted-foreground: 215.4 16.3% 46.9%;
+    /* Success/Safety - Emergency preparedness green */
+    --success: 142 76% 36%;
+    --success-foreground: 0 0% 98%;
+    --success-light: 142 45% 92%;
 
-    --accent: 210 40% 96.1%;
-    --accent-foreground: 222.2 47.4% 11.2%;
+    /* Warning - Attention yellow */
+    --warning: 45 93% 47%;
+    --warning-foreground: 0 0% 98%;
+    --warning-light: 45 85% 95%;
 
-    --destructive: 0 84.2% 60.2%;
-    --destructive-foreground: 210 40% 98%;
+    /* Emergency - Alert red */
+    --emergency: 0 84% 60%;
+    --emergency-foreground: 0 0% 98%;
+    --emergency-light: 0 80% 96%;
 
-    --border: 214.3 31.8% 91.4%;
-    --input: 214.3 31.8% 91.4%;
-    --ring: 222.2 84% 4.9%;
+    /* Gamification accent - Achievement purple */
+    --achievement: 262 83% 58%;
+    --achievement-foreground: 0 0% 98%;
+    --achievement-light: 262 45% 95%;
 
-    --radius: 0.5rem;
+    /* Neutral tones */
+    --muted: 210 20% 94%;
+    --muted-foreground: 215 16% 46%;
 
-    --sidebar-background: 0 0% 98%;
+    --accent: 210 30% 88%;
+    --accent-foreground: 215 25% 25%;
 
-    --sidebar-foreground: 240 5.3% 26.1%;
+    --destructive: 0 84% 60%;
+    --destructive-foreground: 0 0% 98%;
 
-    --sidebar-primary: 240 5.9% 10%;
+    --border: 214 20% 88%;
+    --input: 214 20% 88%;
+    --ring: 214 84% 45%;
 
-    --sidebar-primary-foreground: 0 0% 98%;
+    --radius: 0.8rem;
 
-    --sidebar-accent: 240 4.8% 95.9%;
+    /* Gradients for engaging visuals */
+    --gradient-primary: linear-gradient(135deg, hsl(var(--primary)), hsl(214 84% 55%));
+    --gradient-achievement: linear-gradient(135deg, hsl(var(--achievement)), hsl(var(--primary)));
+    --gradient-success: linear-gradient(135deg, hsl(var(--success)), hsl(142 70% 45%));
 
-    --sidebar-accent-foreground: 240 5.9% 10%;
+    /* Shadows for depth */
+    --shadow-card: 0 2px 8px -2px hsl(214 20% 70% / 0.15);
+    --shadow-achievement: 0 4px 20px -4px hsl(var(--achievement) / 0.3);
+    --shadow-primary: 0 4px 16px -4px hsl(var(--primary) / 0.25);
 
-    --sidebar-border: 220 13% 91%;
-
-    --sidebar-ring: 217.2 91.2% 59.8%;
+    /* Animations */
+    --transition-smooth: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   }
 
   .dark {
-    --background: 222.2 84% 4.9%;
-    --foreground: 210 40% 98%;
+    /* Dark mode optimized for emergency readability */
+    --background: 215 25% 8%;
+    --foreground: 210 20% 95%;
 
-    --card: 222.2 84% 4.9%;
-    --card-foreground: 210 40% 98%;
+    --card: 215 25% 12%;
+    --card-foreground: 210 20% 95%;
 
-    --popover: 222.2 84% 4.9%;
-    --popover-foreground: 210 40% 98%;
+    --popover: 215 25% 12%;
+    --popover-foreground: 210 20% 95%;
 
-    --primary: 210 40% 98%;
-    --primary-foreground: 222.2 47.4% 11.2%;
+    --primary: 214 84% 60%;
+    --primary-foreground: 215 25% 8%;
+    --primary-hover: 214 84% 55%;
 
-    --secondary: 217.2 32.6% 17.5%;
-    --secondary-foreground: 210 40% 98%;
+    --secondary: 215 20% 18%;
+    --secondary-foreground: 210 20% 85%;
 
-    --muted: 217.2 32.6% 17.5%;
-    --muted-foreground: 215 20.2% 65.1%;
+    --success: 142 70% 45%;
+    --success-foreground: 215 25% 8%;
+    --success-light: 142 30% 15%;
 
-    --accent: 217.2 32.6% 17.5%;
-    --accent-foreground: 210 40% 98%;
+    --warning: 45 85% 55%;
+    --warning-foreground: 215 25% 8%;
+    --warning-light: 45 40% 12%;
 
-    --destructive: 0 62.8% 30.6%;
-    --destructive-foreground: 210 40% 98%;
+    --emergency: 0 80% 65%;
+    --emergency-foreground: 215 25% 8%;
+    --emergency-light: 0 50% 15%;
 
-    --border: 217.2 32.6% 17.5%;
-    --input: 217.2 32.6% 17.5%;
-    --ring: 212.7 26.8% 83.9%;
-    --sidebar-background: 240 5.9% 10%;
-    --sidebar-foreground: 240 4.8% 95.9%;
-    --sidebar-primary: 224.3 76.3% 48%;
-    --sidebar-primary-foreground: 0 0% 100%;
-    --sidebar-accent: 240 3.7% 15.9%;
-    --sidebar-accent-foreground: 240 4.8% 95.9%;
-    --sidebar-border: 240 3.7% 15.9%;
-    --sidebar-ring: 217.2 91.2% 59.8%;
+    --achievement: 262 75% 65%;
+    --achievement-foreground: 215 25% 8%;
+    --achievement-light: 262 35% 15%;
+
+    --muted: 215 20% 16%;
+    --muted-foreground: 215 15% 65%;
+
+    --accent: 215 20% 22%;
+    --accent-foreground: 210 20% 85%;
+
+    --border: 215 20% 22%;
+    --input: 215 20% 22%;
+    --ring: 214 84% 60%;
+
+    --gradient-primary: linear-gradient(135deg, hsl(var(--primary)), hsl(214 84% 70%));
+    --gradient-achievement: linear-gradient(135deg, hsl(var(--achievement)), hsl(var(--primary)));
+    --gradient-success: linear-gradient(135deg, hsl(var(--success)), hsl(142 70% 55%));
+
+    --shadow-card: 0 4px 12px -2px hsl(0 0% 0% / 0.5);
+    --shadow-achievement: 0 4px 20px -4px hsl(var(--achievement) / 0.4);
+    --shadow-primary: 0 4px 16px -4px hsl(var(--primary) / 0.3);
   }
 }
 
@@ -100,6 +139,65 @@ All colors MUST be HSL.
   }
 
   body {
-    @apply bg-background text-foreground;
+    @apply bg-background text-foreground font-sans;
+    font-feature-settings: "rlig" 1, "calt" 1;
+  }
+
+  /* Custom scrollbar for better UX */
+  ::-webkit-scrollbar {
+    width: 6px;
+  }
+
+  ::-webkit-scrollbar-track {
+    @apply bg-muted;
+  }
+
+  ::-webkit-scrollbar-thumb {
+    @apply bg-primary/40 rounded-full;
+  }
+
+  ::-webkit-scrollbar-thumb:hover {
+    @apply bg-primary/60;
+  }
+}
+
+@layer components {
+  /* Achievement badge component styles */
+  .achievement-badge {
+    @apply inline-flex items-center gap-2 px-3 py-1.5 rounded-full text-sm font-medium;
+    background: hsl(var(--achievement-light));
+    color: hsl(var(--achievement));
+    border: 1px solid hsl(var(--achievement) / 0.2);
+  }
+
+  /* Progress bar component */
+  .progress-ring {
+    @apply relative inline-flex items-center justify-center;
+  }
+
+  /* Emergency alert styles */
+  .emergency-alert {
+    @apply p-4 rounded-lg border-l-4;
+    background: hsl(var(--emergency-light));
+    border-left-color: hsl(var(--emergency));
+    color: hsl(var(--emergency));
+  }
+
+  /* Success notification */
+  .success-notification {
+    @apply p-4 rounded-lg border-l-4;
+    background: hsl(var(--success-light));
+    border-left-color: hsl(var(--success));
+    color: hsl(var(--success));
+  }
+
+  /* Gamification card hover effects */
+  .gamification-card {
+    @apply transform transition-all duration-300 hover:scale-105;
+    box-shadow: var(--shadow-card);
+  }
+
+  .gamification-card:hover {
+    box-shadow: var(--shadow-primary);
   }
 }
