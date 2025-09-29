@@ -14,6 +14,147 @@ export type Database = {
   }
   public: {
     Tables: {
+      achievements: {
+        Row: {
+          badge_name: string
+          badge_type: string
+          earned_at: string
+          id: string
+          points: number | null
+          user_id: string
+        }
+        Insert: {
+          badge_name: string
+          badge_type: string
+          earned_at?: string
+          id?: string
+          points?: number | null
+          user_id: string
+        }
+        Update: {
+          badge_name?: string
+          badge_type?: string
+          earned_at?: string
+          id?: string
+          points?: number | null
+          user_id?: string
+        }
+        Relationships: []
+      }
+      drill_results: {
+        Row: {
+          completed_at: string
+          drill_type: string
+          id: string
+          score: number
+          time_taken: number | null
+          user_id: string
+        }
+        Insert: {
+          completed_at?: string
+          drill_type: string
+          id?: string
+          score: number
+          time_taken?: number | null
+          user_id: string
+        }
+        Update: {
+          completed_at?: string
+          drill_type?: string
+          id?: string
+          score?: number
+          time_taken?: number | null
+          user_id?: string
+        }
+        Relationships: []
+      }
+      evacuation_routes: {
+        Row: {
+          created_at: string
+          description: string | null
+          disaster_type: string
+          distance_km: number | null
+          district: string
+          estimated_time_minutes: number | null
+          id: string
+          instructions: string[] | null
+          is_active: boolean | null
+          route_name: string
+          safe_zone_address: string
+          safe_zone_name: string
+          state: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          description?: string | null
+          disaster_type: string
+          distance_km?: number | null
+          district: string
+          estimated_time_minutes?: number | null
+          id?: string
+          instructions?: string[] | null
+          is_active?: boolean | null
+          route_name: string
+          safe_zone_address: string
+          safe_zone_name: string
+          state: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          description?: string | null
+          disaster_type?: string
+          distance_km?: number | null
+          district?: string
+          estimated_time_minutes?: number | null
+          id?: string
+          instructions?: string[] | null
+          is_active?: boolean | null
+          route_name?: string
+          safe_zone_address?: string
+          safe_zone_name?: string
+          state?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      learning_progress: {
+        Row: {
+          completed: boolean | null
+          completed_at: string | null
+          created_at: string
+          id: string
+          module_id: string
+          module_name: string
+          score: number | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          completed?: boolean | null
+          completed_at?: string | null
+          created_at?: string
+          id?: string
+          module_id: string
+          module_name: string
+          score?: number | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          completed?: boolean | null
+          completed_at?: string | null
+          created_at?: string
+          id?: string
+          module_id?: string
+          module_name?: string
+          score?: number | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       profiles: {
         Row: {
           created_at: string

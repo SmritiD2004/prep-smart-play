@@ -14,6 +14,7 @@ import ParentDashboard from "./pages/ParentDashboard";
 import ResponseDashboard from "./pages/ResponseDashboard";
 import StateDashboard from "./pages/StateDashboard";
 import NationalDashboard from "./pages/NationalDashboard";
+import SafeRoutes from "./pages/SafeRoutes";
 import LearningModule from "./pages/LearningModule";
 
 const queryClient = new QueryClient();
@@ -35,6 +36,7 @@ const App = () => (
           <Route path="/response-dashboard" element={<ResponseDashboard />} />
           <Route path="/state-dashboard" element={<StateDashboard />} />
           <Route path="/national-dashboard" element={<NationalDashboard />} />
+          <Route path="/safe-routes" element={<SafeRoutes />} />
           <Route path="/learning-module/:id" element={<LearningModule />} />
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
           <Route path="*" element={<NotFound />} />

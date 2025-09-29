@@ -1,6 +1,6 @@
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Shield, Users, GraduationCap, Heart, RadioIcon, Building, Flag } from "lucide-react";
+import { Shield, Users, GraduationCap, Heart, RadioIcon, Building, Flag, Route } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import heroImage from "@/assets/hero-prepsmart.jpg";
 
@@ -100,6 +100,14 @@ const Index = () => {
               >
                 <Shield className="mr-2 h-5 w-5" />
                 Emergency Contacts
+              </Button>
+              <Button 
+                size="lg"
+                className="bg-white text-primary hover:bg-white/90"
+                onClick={() => navigate("/safe-routes")}
+              >
+                <Route className="mr-2 h-5 w-5" />
+                Safe Routes
               </Button>
               <Button 
                 variant="outline" 
@@ -222,6 +230,12 @@ const Index = () => {
                 onClick={() => navigate("/emergency-contacts")}
               >
                 Emergency Contacts
+              </Button>
+              <Button 
+                variant="outline"
+                onClick={() => navigate("/safe-routes")}
+              >
+                Safe Routes
               </Button>
               <Button 
                 variant="outline"

@@ -7,6 +7,7 @@ import { Label } from "@/components/ui/label";
 import { Separator } from "@/components/ui/separator";
 import { useToast } from "@/hooks/use-toast";
 import { Shield, Mail, Lock, User, ArrowLeft, Eye, EyeOff } from "lucide-react";
+import { supabase } from "@/integrations/supabase/client";
 
 const AuthPage = () => {
   const [searchParams] = useSearchParams();
@@ -21,7 +22,10 @@ const AuthPage = () => {
     password: "",
     confirmPassword: "",
     institution: "",
-    role: ""
+    role: "",
+    phone: "",
+    state: "",
+    district: ""
   });
 
   const role = searchParams.get("role") || "student";
@@ -75,24 +79,49 @@ const AuthPage = () => {
     }
 
     try {
-      // Simulate authentication
-      await new Promise(resolve => setTimeout(resolve, 1500));
-      
-      // Store user data in localStorage (in real app, use proper auth)
-      const userData = {
-        name: formData.name || formData.email.split('@')[0],
-        email: formData.email,
-        role: formData.role,
-        institution: formData.institution,
-        loginTime: new Date().toISOString()
-      };
-      
-      localStorage.setItem('prepsmart_user', JSON.stringify(userData));
-      
-      toast({
-        title: isLogin ? "Welcome back!" : "Welcome to PrepSmart!",
-        description: `Successfully ${isLogin ? 'signed in' : 'created account'} as ${currentRole.title}`,
-      });
+      if (isLogin) {
+        // Sign in existing user
+        const { data, error } = await supabase.auth.signInWithPassword({
+          email: formData.email,
+          password: formData.password,
+        });
+
+        if (error) throw error;
+
+        toast({
+          title: "Welcome back!",
+          description: `Successfully signed in as ${currentRole.title}`,
+        });
+      } else {
+        // Sign up new user
+        const { data, error } = await supabase.auth.signUp({
+          email: formData.email,
+          password: formData.password,
+          options: {
+            emailRedirectTo: `${window.location.origin}/`,
+            data: {
+              full_name: formData.name,
+              role: formData.role,
+              school_name: formData.institution,
+              phone: formData.phone || null,
+              state: formData.state || null,
+              district: formData.district || null,
+            }
+          }
+        });
+
+        if (error) throw error;
+
+        toast({
+          title: "Welcome to PrepSmart!",
+          description: "Account created successfully. You can now sign in.",
+        });
+
+        // Switch to login mode after successful signup
+        setIsLogin(true);
+        setLoading(false);
+        return;
+      }
 
       // Navigate to role-specific dashboard
       const dashboardRoutes = {
@@ -107,10 +136,10 @@ const AuthPage = () => {
       
       navigate(dashboardRoutes[role as keyof typeof dashboardRoutes] || "/student-dashboard");
       
-    } catch (error) {
+    } catch (error: any) {
       toast({
         title: "Authentication Error",
-        description: "Failed to authenticate. Please try again.",
+        description: error.message || "Failed to authenticate. Please try again.",
         variant: "destructive"
       });
     } finally {
