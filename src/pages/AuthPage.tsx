@@ -6,8 +6,26 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Separator } from "@/components/ui/separator";
 import { useToast } from "@/hooks/use-toast";
-import { Shield, Mail, Lock, User, ArrowLeft, Eye, EyeOff } from "lucide-react";
+import { Shield, Mail, Lock, User, ArrowLeft, Eye, EyeOff, AlertCircle, CheckCircle2 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
+import { z } from "zod";
+import { Alert, AlertDescription } from "@/components/ui/alert";
+
+// Validation schemas
+const signInSchema = z.object({
+  email: z.string().email("Invalid email address"),
+  password: z.string().min(1, "Password is required"),
+});
+
+const signUpSchema = z.object({
+  name: z.string().min(2, "Name must be at least 2 characters"),
+  email: z.string().email("Invalid email address"),
+  password: z.string().min(8, "Password must be at least 8 characters"),
+  confirmPassword: z.string(),
+}).refine((data) => data.password === data.confirmPassword, {
+  message: "Passwords don't match",
+  path: ["confirmPassword"],
+});
 
 const AuthPage = () => {
   const [searchParams] = useSearchParams();
@@ -16,6 +34,8 @@ const AuthPage = () => {
   const [isLogin, setIsLogin] = useState(true);
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [showForgotPassword, setShowForgotPassword] = useState(false);
+  const [validationErrors, setValidationErrors] = useState<Record<string, string>>({});
   const [formData, setFormData] = useState({
     name: "",
     email: "",
@@ -46,39 +66,136 @@ const AuthPage = () => {
     setFormData(prev => ({ ...prev, role }));
   }, [role]);
 
+  // Check if user is already logged in and redirect
+  useEffect(() => {
+    const checkSession = async () => {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (session) {
+        const dashboardRoutes = {
+          student: "/student-dashboard",
+          teacher: "/teacher-dashboard",
+          admin: "/admin-dashboard",
+          parent: "/parent-dashboard",
+          "response-team": "/response-dashboard",
+          "state-board": "/state-dashboard",
+          "national-agency": "/national-dashboard"
+        };
+        navigate(dashboardRoutes[role as keyof typeof dashboardRoutes] || "/student-dashboard");
+      }
+    };
+
+    checkSession();
+
+    // Listen to auth state changes
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
+      if (event === 'SIGNED_IN' && session) {
+        const dashboardRoutes = {
+          student: "/student-dashboard",
+          teacher: "/teacher-dashboard",
+          admin: "/admin-dashboard",
+          parent: "/parent-dashboard",
+          "response-team": "/response-dashboard",
+          "state-board": "/state-dashboard",
+          "national-agency": "/national-dashboard"
+        };
+        navigate(dashboardRoutes[role as keyof typeof dashboardRoutes] || "/student-dashboard");
+      }
+    });
+
+    return () => subscription.unsubscribe();
+  }, [navigate, role]);
+
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setFormData(prev => ({
-      ...prev,
-      [e.target.name]: e.target.value
-    }));
+    const { name, value } = e.target;
+    setFormData(prev => ({ ...prev, [name]: value }));
+    
+    // Clear validation error for this field
+    if (validationErrors[name]) {
+      setValidationErrors(prev => {
+        const newErrors = { ...prev };
+        delete newErrors[name];
+        return newErrors;
+      });
+    }
+  };
+
+  const getPasswordStrength = (password: string) => {
+    if (password.length === 0) return { strength: 0, label: "" };
+    if (password.length < 8) return { strength: 1, label: "Weak", color: "text-red-500" };
+    
+    let strength = 0;
+    if (password.length >= 8) strength++;
+    if (/[a-z]/.test(password) && /[A-Z]/.test(password)) strength++;
+    if (/\d/.test(password)) strength++;
+    if (/[^a-zA-Z0-9]/.test(password)) strength++;
+    
+    if (strength <= 2) return { strength: 2, label: "Fair", color: "text-orange-500" };
+    if (strength === 3) return { strength: 3, label: "Good", color: "text-yellow-500" };
+    return { strength: 4, label: "Strong", color: "text-green-500" };
+  };
+
+  const handleForgotPassword = async () => {
+    if (!formData.email) {
+      toast({
+        title: "Email Required",
+        description: "Please enter your email address",
+        variant: "destructive"
+      });
+      return;
+    }
+
+    try {
+      const { error } = await supabase.auth.resetPasswordForEmail(formData.email, {
+        redirectTo: `${window.location.origin}/auth?role=${role}`,
+      });
+
+      if (error) throw error;
+
+      toast({
+        title: "Check your email",
+        description: "We've sent you a password reset link",
+      });
+      setShowForgotPassword(false);
+    } catch (error: any) {
+      toast({
+        title: "Error",
+        description: error.message,
+        variant: "destructive"
+      });
+    }
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
-
-    // Basic validation
-    if (!formData.email || !formData.password) {
-      toast({
-        title: "Error",
-        description: "Please fill in all required fields",
-        variant: "destructive"
-      });
-      setLoading(false);
-      return;
-    }
-
-    if (!isLogin && formData.password !== formData.confirmPassword) {
-      toast({
-        title: "Error", 
-        description: "Passwords do not match",
-        variant: "destructive"
-      });
-      setLoading(false);
-      return;
-    }
+    setValidationErrors({});
 
     try {
+      // Validate form data
+      if (isLogin) {
+        const validation = signInSchema.safeParse(formData);
+        if (!validation.success) {
+          const errors: Record<string, string> = {};
+          validation.error.errors.forEach((err) => {
+            if (err.path[0]) errors[err.path[0].toString()] = err.message;
+          });
+          setValidationErrors(errors);
+          setLoading(false);
+          return;
+        }
+      } else {
+        const validation = signUpSchema.safeParse(formData);
+        if (!validation.success) {
+          const errors: Record<string, string> = {};
+          validation.error.errors.forEach((err) => {
+            if (err.path[0]) errors[err.path[0].toString()] = err.message;
+          });
+          setValidationErrors(errors);
+          setLoading(false);
+          return;
+        }
+      }
+
       if (isLogin) {
         // Sign in existing user
         const { data, error } = await supabase.auth.signInWithPassword({
@@ -86,12 +203,24 @@ const AuthPage = () => {
           password: formData.password,
         });
 
-        if (error) throw error;
+        if (error) {
+          // Provide specific error messages
+          let errorMessage = error.message;
+          if (error.message.includes("Invalid login credentials")) {
+            errorMessage = "Invalid email or password. Please check your credentials and try again.";
+          } else if (error.message.includes("Email not confirmed")) {
+            errorMessage = "Please verify your email address before signing in.";
+          }
+          
+          throw new Error(errorMessage);
+        }
 
         toast({
           title: "Welcome back!",
           description: `Successfully signed in as ${currentRole.title}`,
         });
+
+        // Navigation handled by onAuthStateChange listener
       } else {
         // Sign up new user
         const { data, error } = await supabase.auth.signUp({
@@ -113,28 +242,19 @@ const AuthPage = () => {
         if (error) throw error;
 
         toast({
-          title: "Welcome to PrepSmart!",
-          description: "Account created successfully. You can now sign in.",
+          title: "Account Created!",
+          description: data.user?.identities?.length === 0 
+            ? "An account with this email already exists. Please sign in instead."
+            : "Your account has been created successfully. Please check your email to verify your account, then sign in.",
         });
 
         // Switch to login mode after successful signup
-        setIsLogin(true);
+        if (data.user?.identities?.length !== 0) {
+          setIsLogin(true);
+        }
         setLoading(false);
         return;
       }
-
-      // Navigate to role-specific dashboard
-      const dashboardRoutes = {
-        student: "/student-dashboard",
-        teacher: "/teacher-dashboard", 
-        admin: "/admin-dashboard",
-        parent: "/parent-dashboard",
-        "response-team": "/response-dashboard",
-        "state-board": "/state-dashboard",
-        "national-agency": "/national-dashboard"
-      };
-      
-      navigate(dashboardRoutes[role as keyof typeof dashboardRoutes] || "/student-dashboard");
       
     } catch (error: any) {
       toast({
@@ -231,7 +351,7 @@ const AuthPage = () => {
               )}
 
               <div className="space-y-2">
-                <Label htmlFor="password">Password</Label>
+                <Label htmlFor="password">Password {!isLogin && "(min. 8 characters)"}</Label>
                 <div className="relative">
                   <Lock className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
                   <Input
@@ -252,6 +372,44 @@ const AuthPage = () => {
                     {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
                   </button>
                 </div>
+                {validationErrors.password && (
+                  <p className="text-sm text-destructive flex items-center gap-1">
+                    <AlertCircle className="h-3 w-3" />
+                    {validationErrors.password}
+                  </p>
+                )}
+                {!isLogin && formData.password && (
+                  <div className="space-y-1">
+                    <div className="flex items-center gap-2">
+                      <div className="flex-1 h-1 bg-muted rounded-full overflow-hidden">
+                        <div 
+                          className={`h-full transition-all ${
+                            getPasswordStrength(formData.password).strength === 1 ? "w-1/4 bg-red-500" :
+                            getPasswordStrength(formData.password).strength === 2 ? "w-2/4 bg-orange-500" :
+                            getPasswordStrength(formData.password).strength === 3 ? "w-3/4 bg-yellow-500" :
+                            "w-full bg-green-500"
+                          }`}
+                        />
+                      </div>
+                      <span className={`text-xs font-medium ${getPasswordStrength(formData.password).color}`}>
+                        {getPasswordStrength(formData.password).label}
+                      </span>
+                    </div>
+                    <p className="text-xs text-muted-foreground">
+                      Use 8+ characters with uppercase, lowercase, numbers & symbols
+                    </p>
+                  </div>
+                )}
+                {isLogin && (
+                  <Button
+                    type="button"
+                    variant="link"
+                    onClick={() => setShowForgotPassword(true)}
+                    className="p-0 h-auto text-xs"
+                  >
+                    Forgot password?
+                  </Button>
+                )}
               </div>
 
               {!isLogin && (
@@ -270,6 +428,18 @@ const AuthPage = () => {
                       required={!isLogin}
                     />
                   </div>
+                  {validationErrors.confirmPassword && (
+                    <p className="text-sm text-destructive flex items-center gap-1">
+                      <AlertCircle className="h-3 w-3" />
+                      {validationErrors.confirmPassword}
+                    </p>
+                  )}
+                  {formData.confirmPassword && formData.password === formData.confirmPassword && (
+                    <p className="text-sm text-green-600 flex items-center gap-1">
+                      <CheckCircle2 className="h-3 w-3" />
+                      Passwords match
+                    </p>
+                  )}
                 </div>
               )}
 
@@ -282,6 +452,29 @@ const AuthPage = () => {
               </Button>
             </form>
 
+            {showForgotPassword && (
+              <Alert className="mt-4">
+                <AlertDescription className="space-y-3">
+                  <p className="text-sm">Enter your email to receive a password reset link</p>
+                  <div className="flex gap-2">
+                    <Button 
+                      onClick={handleForgotPassword}
+                      size="sm"
+                    >
+                      Send Reset Link
+                    </Button>
+                    <Button 
+                      onClick={() => setShowForgotPassword(false)}
+                      variant="outline"
+                      size="sm"
+                    >
+                      Cancel
+                    </Button>
+                  </div>
+                </AlertDescription>
+              </Alert>
+            )}
+
             <Separator className="my-6" />
 
             <div className="text-center">
@@ -290,7 +483,11 @@ const AuthPage = () => {
               </p>
               <Button
                 variant="link"
-                onClick={() => setIsLogin(!isLogin)}
+                onClick={() => {
+                  setIsLogin(!isLogin);
+                  setShowForgotPassword(false);
+                  setValidationErrors({});
+                }}
                 className="p-0 h-auto font-normal"
               >
                 {isLogin ? "Create new account" : "Sign in instead"}
